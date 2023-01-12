@@ -9,10 +9,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.HashMap;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
     EditText emailInp,passwordInp;
     Button loginBtn;
     AppCompatButton btn;
+    RetrofitInterface retrofitInterface;
+    private String BASE_URL="http://192.168.187.169:5000/";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         passwordInp=findViewById(R.id.passInp);
         loginBtn=findViewById(R.id.loginBtn);
         btn=findViewById(R.id.btn);
+
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        retrofitInterface=retrofit.create(RetrofitInterface.class);
 
          btn.setOnClickListener(view -> {
              Intent intent=new Intent(this,RegisterActivity.class);
@@ -36,10 +53,28 @@ public class MainActivity extends AppCompatActivity {
                  Toast.makeText(this, "All fields required!", Toast.LENGTH_SHORT).show();
              }else{
                  //db code
-                 Toast.makeText(this, email, Toast.LENGTH_SHORT).show();
-                 Intent intent=new Intent(this,HomeActivity.class);
-                 intent.putExtra("Email",email);
-                 startActivity(intent);
+                 HashMap<String,String> map=new HashMap<>();
+                 map.put("email",email);
+                 map.put("password",password);
+                 Call<String> call=retrofitInterface.loginUser(map);
+                 call.enqueue(new Callback<String>() {
+                     @Override
+                     public void onResponse(Call<String> call, Response<String> response) {
+                         Toast.makeText(MainActivity.this, response.message(), Toast.LENGTH_SHORT).show();
+//                         Intent intent=new Intent(MainActivity.this,HomeActivity.class);
+//                         intent.putExtra("Email",email);
+//                         startActivity(intent);
+                     }
+                     @Override
+                     public void onFailure(Call<String> call, Throwable t) {
+                         Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                     }
+                 });
+
+//                 Toast.makeText(this, email, Toast.LENGTH_SHORT).show();
+//                 Intent intent=new Intent(this,HomeActivity.class);
+//                 intent.putExtra("Email",email);
+//                 startActivity(intent);
              }
          });
     }
