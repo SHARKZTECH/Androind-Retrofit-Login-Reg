@@ -5,6 +5,7 @@ import androidx.appcompat.widget.AppCompatButton;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     Button loginBtn;
     AppCompatButton btn;
     RetrofitInterface retrofitInterface;
-    private String BASE_URL="http://192.168.187.169:5000/";
+    private String BASE_URL="http://192.168.88.26:5000/";
 
 
     @Override
@@ -56,25 +57,28 @@ public class MainActivity extends AppCompatActivity {
                  HashMap<String,String> map=new HashMap<>();
                  map.put("email",email);
                  map.put("password",password);
-                 Call<String> call=retrofitInterface.loginUser(map);
-                 call.enqueue(new Callback<String>() {
+                 Call<User> call=retrofitInterface.loginUser(map);
+                 call.enqueue(new Callback<User>() {
                      @Override
-                     public void onResponse(Call<String> call, Response<String> response) {
-                         Toast.makeText(MainActivity.this, response.message(), Toast.LENGTH_SHORT).show();
-//                         Intent intent=new Intent(MainActivity.this,HomeActivity.class);
-//                         intent.putExtra("Email",email);
-//                         startActivity(intent);
+                     public void onResponse(Call<User> call, Response<User> response) {
+                         if (response.isSuccessful()) {
+                             Toast.makeText(MainActivity.this, "Success Log", Toast.LENGTH_SHORT).show();
+                             User user=response.body();
+                             Log.d("Login", "onResponse: " + user);
+                             Intent intent=new Intent(MainActivity.this,HomeActivity.class);
+                             intent.putExtra("Email",email);
+                             startActivity(intent);
+                         }else{
+                             Toast.makeText(MainActivity.this,"Incorrect email/password", Toast.LENGTH_SHORT).show();
+                             Log.d("Login", "onResponse: "+response.raw());
+                         }
                      }
                      @Override
-                     public void onFailure(Call<String> call, Throwable t) {
+                     public void onFailure(Call<User> call, Throwable t) {
                          Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                         Log.d("Login", "onFailure: "+t);
                      }
                  });
-
-//                 Toast.makeText(this, email, Toast.LENGTH_SHORT).show();
-//                 Intent intent=new Intent(this,HomeActivity.class);
-//                 intent.putExtra("Email",email);
-//                 startActivity(intent);
              }
          });
     }
