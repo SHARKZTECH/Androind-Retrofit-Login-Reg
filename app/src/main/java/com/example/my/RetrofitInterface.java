@@ -10,4 +10,6 @@ public interface RetrofitInterface {
 
 @POST("api/user/login")
     Call<User> loginUser(@Body HashMap<String,String> map);
+@POST("api/user/register")
+    Call<Void> registerUser(@Body HashMap<String,String> map);
 }
